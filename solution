@@ -1,0 +1,111 @@
+board = [["___"] * 7 for i in range(6)]
+b_len = len(board)
+header = ["_1_", "_2_", "_3_", "_4_", "_5_", "_6_", "_7_"]
+turn = -1
+winner = False
+
+
+# Prints board every turn by adding | | borders to the board 2D list
+def print_board():
+  print('   '.join(header))
+  print("    |     |     |     |     |     |   ")
+  i = 0
+  while i < b_len:
+    print(' | '.join(board[i]))
+    print("    |     |     |     |     |     |   ")
+    i += 1
+  print("\n")
+  
+
+# Determines if it is an even(O) or odd(X) turn. Starts at 0 and += 1 everytime it is called
+def find_turn():
+  global turn 
+  turn += 1
+  if turn % 2 == 0:
+    return "_O_"
+  else:
+    return "_X_"
+
+
+# Checks if selected column is full of pieces
+def is_full(column):
+  if board[0][column - 1] != "___":
+    return True
+
+
+# Determines if there are any availale moves left
+def board_full():
+  for row in board:
+    if row.count("___") != 0:
+      return False
+  return True
+
+
+# Determines if there is a winner
+def game_over(board, symbol):
+   # check horizontal spaces
+  for y in range(len(board[0])):
+      for x in range(len(board) - 3):
+          if board[x][y] == symbol and board[x+1][y] == symbol and board[x+2][y] == symbol and board[x+3][y] == symbol:
+            return True
+  # check vertical spaces
+  for x in range(len(board)):
+      for y in range(len(board[0]) - 3):
+          if board[x][y] == symbol and board[x][y+1] == symbol and board[x][y+2] == symbol and board[x][y+3] == symbol:
+            return True
+  # check / diagonal spaces
+  for x in range(len(board) - 3):
+      for y in range(3, len(board[0])):
+          if board[x][y] == symbol and board[x+1][y-1] == symbol and board[x+2][y-2] == symbol and board[x+3][y-3] == symbol:
+            return True
+  # check \ diagonal spaces
+  for x in range(len(board) - 3):
+      for y in range(len(board[0]) - 3):
+          if board[x][y] == symbol and board[x+1][y+1] == symbol and board[x+2][y+2] == symbol and board[x+3][y+3] == symbol:
+              return True
+
+  return False
+
+
+# Places piece. Takes parameter 
+def select_column(column, symbol):
+  global winner
+  count = 0
+  # DRAW if no more moves available
+  if board_full() == True:
+    return print("Draw - Game Over")
+  # Retake turn - move out of board range
+  if column > 7 or column < 1:
+    print("WARNING <RANGE ERROR>:\n Outside of column range. Enter a valid number(1-7).")
+    move = int(input("Enter column to drop piece: "))
+    return select_column(move, symbol)
+  # Retake turn - move column is full
+  if is_full(column):
+    print("WARNING <COLUMN ERROR>:\n Column full. Pick a new column.")
+    move = int(input("Enter column to drop piece: "))
+    return select_column(move, symbol)
+  # Rows contain list of columns
+  else:
+    for row in board:
+        if row[column - 1] != "___":
+          board[count - 1][column - 1] = symbol
+          # Will print multiple turns in a row if the break isn't included
+          break
+        elif count == 5:
+          board[-1][column - 1] = symbol
+        else:
+          count += 1
+  # Checks if there is a winner
+  if game_over(board, symbol) == True:
+    winner = True
+    print("GAME OVER: {} wins!".format(symbol))
+  return print_board()
+
+
+# While there is no winner, this will ask for move input from whoevers turn it is
+while winner == False:
+  symbol = find_turn()
+  print()
+  print("TURN {}: {}".format(str(turn + 1), symbol))
+  move = int(input("Enter column to drop piece: "))
+  select_column(move, symbol)
